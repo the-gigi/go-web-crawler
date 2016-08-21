@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"sync"
+)
 
+// Fetcher interface
 type Fetcher interface {
 	// Fetch returns the body of URL and
 	// a slice of URLs found on that page.
@@ -57,6 +62,18 @@ var fetcher = fakeFetcher{
 	},
 }
 
+var wg sync.WaitGroup
+
 func main() {
-	SyncMapCrawl("http://golang.org/", 4, fetcher)
+	algorithm := flag.String("algorithm", "channel", "'channel' (default) or 'sync'")
+	flag.Parse()
+
+	switch *algorithm {
+	case "channel":
+		ChannelCrawl("http://golang.org/", 4, fetcher)
+	case "sync":
+		SyncMapCrawl("http://golang.org/", 4, fetcher)
+	default:
+		fmt.Println("Unknown algorithm. Valid values are: 'channel' or 'sync'")
+	}
 }

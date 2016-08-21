@@ -1,44 +1,49 @@
 package main
 
-// var visited := make(map[string]bool)
+import "fmt"
 
-func fetchURL(url string, ch chan int) {
-	// 	body, urls, err := fetcher.Fetch(url)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
+type links struct {
+	urls  []string
+	depth int
 }
 
-// ChannelCrawl uses fetcher to crawl
-// pages starting with url, to a maximum of depth.
+func fetchURL(url string, depth int, candidates chan links) {
+	body, urls, err := fetcher.Fetch(url)
+	fmt.Printf("found: %s %q\n", url, body)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	candidates <- links{urls, depth - 1}
+}
+
+// ChannelCrawl crawls links from a seed url
 func ChannelCrawl(url string, depth int, fetcher Fetcher) {
-	// 	defer wg.Done()
+	candidates := make(chan links, 0)
+	fetched := make(map[string]bool)
+	counter := 1
 
-	// 	if depth <= 0 {
-	// 		return
-	// 	}
+	// Fetch initial url to seed the candidates channel
+	go fetchURL(url, depth, candidates)
 
-	// 	// Check if this url has already been fetched (or being fetched)
-	// 	fetchedUrls.m.Lock()
-	// 	if fetchedUrls.urls[url] {
-	// 		fetchedUrls.m.Unlock()
-	// 		return
-	// 	}
+	for counter > 0 {
+		candidateLinks := <-candidates
+		counter--
+		depth = candidateLinks.depth
+		for _, candidate := range candidateLinks.urls {
+			// Already fetched. Continue...
+			if fetched[candidate] {
+				continue
+			}
 
-	// 	// OK. eEt's fetch this url
-	// 	fetchedUrls.urls[url] = true
-	// 	fetchedUrls.m.Unlock()
+			// Add to fetched mapped
+			fetched[candidate] = true
 
-	// 	body, urls, err := fetcher.Fetch(url)
-	// 	if err != nil {
-	// 		fmt.Println(err)
-	// 		return
-	// 	}
-	// 	fmt.Printf("found: %s %q\n", url, body)
-	// 	for _, u := range urls {
-	// 		wg.Add(1)
-	// 		go Crawl(u, depth-1, fetcher)
-	// 	}
-	// 	return
+			if depth > 0 {
+				counter++
+				go fetchURL(candidate, depth, candidates)
+			}
+		}
+	}
 }

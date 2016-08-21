@@ -43,8 +43,7 @@ var fetchedUrls = struct {
 	m    sync.Mutex
 }{urls: make(map[string]bool)}
 
-var wg sync.WaitGroup
-
+// SyncMapCrawl uses a recursive crawl() functon to fetch all urls
 func SyncMapCrawl(url string, depth int, fetcher Fetcher) {
 	wg.Add(1)
 	go crawl("http://golang.org/", 4, fetcher)
