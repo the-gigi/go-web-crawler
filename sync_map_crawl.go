@@ -21,7 +21,7 @@ func crawl(url string, depth int, fetcher Fetcher) {
 		return
 	}
 
-	// OK. eEt's fetch this url
+	// OK. Let's fetch this url
 	fetchedUrls.urls[url] = true
 	fetchedUrls.m.Unlock()
 
